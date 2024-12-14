@@ -58,6 +58,19 @@ public class Marble {
         return allowedOperators;
     }
 
+
+    public void setAllowedOperators(boolean[] allowedOperators) {
+        this.allowedOperators = allowedOperators;
+    }
+
+    public Position getPathDid() {
+        return pathDid.getLast();
+    }
+
+    public void setPathDid(ArrayList<Position> pathDid) {
+        this.pathDid = pathDid;
+    }
+
     // possible operators - moving up, down, left or right
     public Marble[][] moveUp(Marble[][] board) {
         Position prev = getPos();
@@ -67,7 +80,7 @@ public class Marble {
             Position now = getPos();
             return updateBoard(board, prev, now);
         }
-        return null;
+        return board;
     }
 
     public Marble[][] moveDown(Marble[][] board) {
@@ -78,7 +91,7 @@ public class Marble {
             Position now = getPos();
             return updateBoard(board, prev, now);
         }
-        return null;
+        return board;
     }
 
     public Marble[][] moveLeft(Marble[][] board) {
@@ -89,7 +102,7 @@ public class Marble {
             Position now = getPos();
             return updateBoard(board, prev, now);
         }
-        return null;
+        return board;
     }
 
     public Marble[][] moveRight(Marble[][] board) {
@@ -100,7 +113,7 @@ public class Marble {
             Position now = getPos();
             return updateBoard(board, prev, now);
         }
-        return null;
+        return board;
     }
 
     private Marble[][] updateBoard(Marble[][] board, Position prev, Position now) {
@@ -111,35 +124,40 @@ public class Marble {
             }
         }
         newBoard[now.getI()][now.getJ()] = newBoard[prev.getI()][prev.getJ()];
-        newBoard[prev.getI()][prev.getJ()] = new Marble("X", prev);
+        newBoard[prev.getI()][prev.getJ()] = new Marble("_", prev);
         return newBoard;
     }
 
     // checks that the wanted space is blank (no color or X) and that doesn't go right back to where it was
     private boolean canMove(int i, int j, Marble[][] board) {
-        return board[i][j].getColor().equals("_") && (this.pathDid.getLast().getI() != i || this.pathDid.getLast().getJ() != j);
+        if((this.getColor().equals("R") || this.getColor().equals("G") || this.getColor().equals("B"))
+                && board[i][j].getColor().equals("_")
+                && (this.pathDid.getLast().getI() != i || this.pathDid.getLast().getJ() != j)){
+            return true;}
+        else { return false; }
     }
 
-
+    // this function ensures that the allowed operators for the marble will maintain that the marble
+    // can only move to empty spaces and cannot immediately return to its previous position
     public boolean[] allowedOperators(Marble[][] board) {
         boolean[] allowed = new boolean[4]; // [up, down, left, right]
         int i = this.pos.getI();
         int j = this.pos.getJ();
         // Check up
         int upI = (i - 1 + 3) % 3;
-        allowed[0] = board[upI][j].getColor().equals("_");
+        allowed[0] = board[upI][j].getColor().equals("_") && !(this.pathDid.getLast().getI() == upI && this.pathDid.getLast().getJ() == j);
 
         // Check down
         int downI = (i + 1) % 3;
-        allowed[1] = board[downI][j].getColor().equals("_");
+        allowed[1] = board[downI][j].getColor().equals("_") && !(this.pathDid.getLast().getI() == downI && this.pathDid.getLast().getJ() == j);
 
         // Check left
         int leftJ = (j - 1 + 3) % 3;
-        allowed[2] = board[i][leftJ].getColor().equals("_");
+        allowed[2] = board[i][leftJ].getColor().equals("_") && !(this.pathDid.getLast().getI() == i && this.pathDid.getLast().getJ() == leftJ);
 
         // Check right
         int rightJ = (j + 1) % 3;
-        allowed[3] = board[i][rightJ].getColor().equals("_");
+        allowed[3] = board[i][rightJ].getColor().equals("_") && !(this.pathDid.getLast().getI() == i && this.pathDid.getLast().getJ() == rightJ);
 
         return allowed;  // 1=allowed , 0=forbidden
     }
@@ -171,8 +189,14 @@ class Position {
     }
 
     @Override
+    //the function not only prints the position in the form of (i,j) but also change the indexing:
+    // (0,0) (0,1) (0,2)        (1,1) (1,2) (1,3)
+    // (1,0) (1,1) (1,2)  ->    (2,1) (2,2) (2,3)
+    // (2,0) (2,1) (2,2)        (3,1) (3,2) (3,3)
     public String toString(){
-        return "("+ this.i+","+ this.j+")";
+        int realI = this.i + 1;
+        int realJ = this.j + 1;
+        return "("+ realI+","+ realJ+")";
     }
 
 }

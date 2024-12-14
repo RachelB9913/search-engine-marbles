@@ -41,16 +41,19 @@ class InputParser {
                 goal = new Board(goalBoard, false);
             }
 
+            // Ensure boards are always initialized
+            if (startBoard[0][0] == null || goalBoard[0][0] == null) {
+                System.out.println("Error: Boards not properly initialized");
+                return null;
+            }
+            start = new Board(startBoard, false);  // Ensure this constructor sets board correctly
+            goal = new Board(goalBoard, true);
+
         } catch (IOException e) {
             System.out.println("Error reading file: " + e.getMessage());
-        }
-
-        if(start != null && goal != null) {
-            return new parsedData(algoName, time, openList, start, goal);
-        }
-        else{
             return null;
         }
+        return new parsedData(algoName, time, openList, start, goal);
     }
 
     public static void printBoard(Marble[][] board) {

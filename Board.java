@@ -6,8 +6,18 @@ public class Board {
     private Board parent;
     private Operator howGotTo;
 
-    public Board(Marble[][] board, boolean isGoal) {
-        this.board = board;
+    public Board(Marble[][] board, boolean isGoal) { //decide what to erase
+        if (board == null) {
+            this.board = new Marble[3][3];
+            // initialize with blank marbles or throw an exception
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    this.board[i][j] = new Marble("_", new Position(i, j));
+                }
+            }
+        } else {
+            this.board = board;
+        }
         this.isGoal = isGoal;
     }
 
@@ -38,6 +48,11 @@ public class Board {
 
     // a function that checks whether the board is the goal board to understand if we reached the goal.
     public boolean checkIsGoal(Marble[][] goal){
+        if (this.board == null) {
+            System.out.println("Error: Board is null in checkIsGoal");
+            return false;
+        }
+
         for(int i=0; i<3; i++) {
             for(int j=0; j<3; j++) {
                 String color1 = this.board[i][j].getColor();
