@@ -124,6 +124,7 @@ public class Marble {
             }
         }
         newBoard[now.getI()][now.getJ()] = newBoard[prev.getI()][prev.getJ()];
+        newBoard[now.getI()][now.getJ()].setPos(now); // Update the marble's position
         newBoard[prev.getI()][prev.getJ()] = new Marble("_", prev);
         return newBoard;
     }
@@ -143,6 +144,9 @@ public class Marble {
         boolean[] allowed = new boolean[4]; // [up, down, left, right]
         int i = this.pos.getI();
         int j = this.pos.getJ();
+        if (!board[i][j].getColor().equals("G") && !board[i][j].getColor().equals("R") && !board[i][j].getColor().equals("B")) {
+            return new boolean[]{false, false, false, false};
+        }
         // Check up
         int upI = (i - 1 + 3) % 3;
         allowed[0] = board[upI][j].getColor().equals("_") && !(this.pathDid.getLast().getI() == upI && this.pathDid.getLast().getJ() == j);
@@ -159,7 +163,7 @@ public class Marble {
         int rightJ = (j + 1) % 3;
         allowed[3] = board[i][rightJ].getColor().equals("_") && !(this.pathDid.getLast().getI() == i && this.pathDid.getLast().getJ() == rightJ);
 
-        return allowed;  // 1=allowed , 0=forbidden
+        return allowed;  // true = allowed, false = forbidden
     }
 }
 

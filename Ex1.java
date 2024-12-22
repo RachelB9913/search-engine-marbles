@@ -15,7 +15,7 @@ public class Ex1 {
 
         parsedData data = InputParser.parseInput("input.txt");
 
-        String filePath = "output1.txt";
+        String filePath = "output.txt";
         BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
 
         String algoName = data.getAlgoName();
@@ -37,19 +37,11 @@ public class Ex1 {
         System.out.println("Goal Board:");
         InputParser.printBoard(goalBoard);
 
-//        // check that allowed operators function works
-//        Marble m = data.getMarble(goalBoard, 1, 0);
-//
-//        boolean[] list = m.allowedOperators(goalBoard);
-//        System.out.println("Allowed operators: " + Arrays.toString(list) + " for: " + m.getColor() + m.getPos().toString());
-
-
         long startTime = System.nanoTime(); // start measuring the time
         switch (algoName) {
             case "BFS": {
                 reset();
-//                runBFS(start, goal, writer);
-                runBFSWithHash(start, goal, writer);
+                runBFS(start, goal, writer);
                 break;
             }
             case "DFID": {
@@ -75,10 +67,9 @@ public class Ex1 {
         }
 
         long endTime = System.nanoTime(); // stop the time measurement
-        double durationInSeconds = (endTime - startTime) / 1_000_000_000.0; //duration and paring to seconds
+        timeTook = (endTime - startTime) / 1_000_000_000.0; //duration and paring to seconds
         if (time) {
-            timeTook = durationInSeconds;  // and write it to the output file
-            String theTime = String.valueOf(timeTook);
+            String theTime = String.format("%.3f", timeTook);
             writer.newLine();
             writer.write(theTime + " seconds");
             System.out.println(theTime + " seconds");
@@ -86,62 +77,32 @@ public class Ex1 {
         writer.flush();
     }
 
+
 //// FUNCTIONS!!! ////
 
     private static void runBFS(Board startBoard, Board goalBoard, BufferedWriter writer) throws IOException {
-        // add code!!!!
-        boolean goal = false;
-        ArrayList<Board> queue = new ArrayList<>();
-        queue.add(startBoard);
-        while (!queue.isEmpty()) {
-            Board currentBoard = queue.removeFirst(); //take the last added board
-            ArrayList<Operator> allOperators = generateAllOperators(currentBoard); //find all the possible operators for this state
-            for (Operator op : allOperators) {
-                Board curr = boardFromOperator(currentBoard, op); // the state we get when applying the given operator on the current state
-                numOfNodes ++; // will count each time a new state (board - node) was created
-                goal = curr.checkIsGoal(goalBoard.getMarbleBoard());
-                if (goal) {
-                    ArrayList<Operator> path = retrievePath(curr, startBoard); // function to retrieve the path
-                    String pathToString = pathToString(path);//  a to-string to the path
-                    writer.write(pathToString); // write path to output.txt
-                    System.out.println(pathToString);
-                    writer.newLine();
-                    writer.write("Num: " + numOfNodes);
-                    System.out.println("Num: " + numOfNodes);
-                    writer.newLine();
-                    if(costOfPath == -1){
-                        writer.write("Cost: inf");
-                    }
-                    else{
-                    writer.write("Cost: " + costOfPath);
-                    System.out.println("Cost: " + costOfPath);
-                    }
-                    return;
-                }
-                else{
-                    queue.add(curr);
-                }
-            }
-        }
-        System.out.println("BFS didn't succeed!");
-    }
-
-    private static void runBFSWithHash(Board startBoard, Board goalBoard, BufferedWriter writer) throws IOException {
-        // add code!!!!
         boolean goal;
-        ArrayList<Board> queue = new ArrayList<>();  // frontier
-        Hashtable<Board, Integer> closed = new Hashtable<>(); // closed list 0 for not visited 1 for visited
-        queue.add(startBoard);
-        while (!queue.isEmpty()) {
-            Board currentBoard = queue.removeFirst(); //take the first added board
-            closed.put(currentBoard, 1);
+        ArrayList<Board> openList = new ArrayList<>();  // frontier
+        Hashtable<Board, Integer> closedList = new Hashtable<>(); // closedList list 0 for not visited 1 for visited
+
+        openList.add(startBoard);
+        while (!openList.isEmpty()) {
+            Board currentBoard = openList.removeFirst(); //take the first added board
+            System.out.println("the current operator board is: ");
+            InputParser.printBoard(currentBoard.getMarbleBoard());
+            if (closedList.containsKey(currentBoard)) {
+                continue; // Skip processing if already in closed list.
+            }
             ArrayList<Operator> allOperators = generateAllOperators(currentBoard); //find all the possible operators for this state
+            closedList.put(currentBoard, 1); // adding to the closed list after finding all its "children"
             for (Operator op : allOperators) {
                 Board curr = boardFromOperator(currentBoard, op); // the state we get when applying the given operator on the current state
                 numOfNodes ++; // will count each time a new state (board - node) was created
-                if(!closed.containsKey(curr) && !queue.contains(curr)) {
+                if(!closedList.containsKey(curr) && !openList.contains(curr)) {
                     goal = curr.checkIsGoal(goalBoard.getMarbleBoard());
                     if (goal) {
+                        System.out.println("reached the GOAL board: ");
+                        InputParser.printBoard(curr.getMarbleBoard());
                         ArrayList<Operator> path = retrievePath(curr, startBoard); // function to retrieve the path
                         String pathToString = pathToString(path);//  a to-string to the path
                         writer.write(pathToString); // write path to output.txt
@@ -156,20 +117,15 @@ public class Ex1 {
                             writer.write("Cost: " + costOfPath);
                             System.out.println("Cost: " + costOfPath);
                         }
-                        for (Board key : closed.keySet()) {
-                            InputParser.printBoard(key.getMarbleBoard());
-                            System.out.println("---------");
-                        }
                         return;
                     } else {
-                        queue.add(curr);
+                        openList.add(curr);
                     }
                 }
             }
         }
         System.out.println("BFS didn't succeed!");
     }
-
 
 
     private static void runDFID(Board startBoard, Board goalBoard, BufferedWriter writer) throws IOException {
@@ -186,7 +142,8 @@ public class Ex1 {
                 writer.write("Num: " + numOfNodes);
                 System.out.println("Num: " + numOfNodes);
                 writer.newLine();
-                // Optionally, write the cost
+                writer.write("Cost: " + costOfPath);
+                System.out.println("Cost: " + costOfPath);
                 break; // Exit the loop once a path is found
             }
         }
@@ -209,7 +166,7 @@ public class Ex1 {
                 Board nextBoard = boardFromOperator(currBoard, op);
                 numOfNodes++;
                 if (h.get(nextBoard) != null && h.get(nextBoard).equals(1)) {
-                    continue;  // continue to the next operator
+                    continue;  // continue to the next operator - loop avoidance??????
                 }
                 result = runLimitedDFS(startBoard, nextBoard, goalBoard, limit - 1, h);
 

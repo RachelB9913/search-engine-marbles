@@ -1,5 +1,3 @@
-import java.util.Objects;
-
 public class Board {
     private Marble[][] board;
     private final boolean isGoal;
@@ -52,17 +50,49 @@ public class Board {
             System.out.println("Error: Board is null in checkIsGoal");
             return false;
         }
+        return this.checkEquals(goal);
+    }
 
+    //checks checkEquals only based on the colors
+    public boolean checkEquals(Marble[][] other) {
         for(int i=0; i<3; i++) {
             for(int j=0; j<3; j++) {
                 String color1 = this.board[i][j].getColor();
-                String color2 = goal[i][j].getColor();
+                String color2 = other[i][j].getColor();
                 if (!color1.equals(color2)) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Board other = (Board) obj;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (!this.board[i][j].getColor().equals(other.board[i][j].getColor())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // suggested by chatGPT
+    @Override
+    public int hashCode() {
+        int result = 17;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                result = 31 * result + this.board[i][j].getColor().hashCode();
+            }
+        }
+        return result;
     }
 
     public Board getParent() { // deep copy?
