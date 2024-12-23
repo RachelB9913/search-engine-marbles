@@ -96,7 +96,6 @@ class parsedData {
         this.goalBoard = new Board(goalBoardCopy, true);
     }
 
-
     public String getAlgoName() {
         return algoName;
     }

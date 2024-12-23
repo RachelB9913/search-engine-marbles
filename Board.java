@@ -1,8 +1,16 @@
+import java.util.Comparator;
+
 public class Board {
     private Marble[][] board;
     private final boolean isGoal;
     private Board parent;
     private Operator howGotTo;
+
+    // for the A* algo
+    private int g;
+    private  int h;
+    private int f;
+    private int creationTime;
 
     public Board(Marble[][] board, boolean isGoal) { //decide what to erase
         if (board == null) {
@@ -24,6 +32,15 @@ public class Board {
         this.isGoal = isGoal;
         this.parent = parent;
         this.howGotTo = null;
+    }
+
+    public Board(Marble[][] board, boolean isGoal, int creationTime) {
+        this.board = board;
+        this.isGoal = isGoal;
+        this.g = 0;
+        this.h = 0;
+        this.f = 0;
+        this.creationTime = creationTime;
     }
 
     public Board(Marble[][] board, boolean isGoal, Board parent, Operator howGotTo) {
@@ -99,9 +116,7 @@ public class Board {
         return parent;
     }
 
-    public void setParent(Board parent) {
-        this.parent = parent;
-    }
+    public void setParent(Board parent) { this.parent = parent; }
 
     public Operator getHowGotTo() {
         return howGotTo;
@@ -110,4 +125,22 @@ public class Board {
     public void setHowGotTo(Operator howGotTo) {
         this.howGotTo = howGotTo;
     }
+
+    public int getG() { return g; }
+
+    public void setG(int g) { this.g = g; }
+
+    public int getH() { return h; }
+
+    public void setH(int h) { this.h = h; }
+
+    public int getF() { return f; }
+
+    public void setF(int f) { this.f = f; }
+
+    public int getCreationTime() {return creationTime;}
+
+    public void setCreationTime(int time) {this.creationTime = time;}
+
 }
+

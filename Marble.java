@@ -46,30 +46,19 @@ public class Marble {
         this.pos = pos;
     }
 
-    public void setPos(int i, int j) {
-        this.pos = new Position(i, j);
-    }
+    public void setPos(int i, int j) { this.pos = new Position(i, j); }
 
     public int getCost() {
         return cost;
     }
 
-    public boolean[] getAllowedOperators() {
-        return allowedOperators;
-    }
+    public boolean[] getAllowedOperators() { return allowedOperators; }
 
+    public void setAllowedOperators(boolean[] allowedOperators) { this.allowedOperators = allowedOperators; }
 
-    public void setAllowedOperators(boolean[] allowedOperators) {
-        this.allowedOperators = allowedOperators;
-    }
+    public ArrayList<Position> getPathDid() { return pathDid; }
 
-    public Position getPathDid() {
-        return pathDid.getLast();
-    }
-
-    public void setPathDid(ArrayList<Position> pathDid) {
-        this.pathDid = pathDid;
-    }
+    public void setPathDid(ArrayList<Position> pathDid) { this.pathDid = pathDid; }
 
     // possible operators - moving up, down, left or right
     public Marble[][] moveUp(Marble[][] board) {

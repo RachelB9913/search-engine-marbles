@@ -25,9 +25,7 @@ public class Operator {
         this.marble = marble;
     }
 
-    public Position getPrevPos() {
-        return new Position(this.prevPos.getI(), this.prevPos.getJ());
-    }
+    public Position getPrevPos() { return new Position(this.prevPos.getI(), this.prevPos.getJ()); }
 
     public void setPrevPos(Position prevPos) {
         this.prevPos = prevPos;
