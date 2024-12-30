@@ -624,6 +624,8 @@ public class Ex1 {
                 map[i][j] = new Marble(originalBoard[i][j]);
             }
         }
+        op.marble = map[op.prevPos.getI()][op.prevPos.getJ()];
+
         // then apply the move
         if (op.move.equals("up")) {
             map = op.marble.moveUp(map);

@@ -30,7 +30,7 @@ public class Marble {
         this.cost = marble.getCost();
         this.pos = marble.getPos();
         this.allowedOperators = new boolean[4];
-        this.pathDid = new ArrayList<>();
+        this.pathDid = new ArrayList<>(marble.getPathDid()); // Deep copy
         this.pathDid.add(marble.getPos());
     }
 
@@ -67,6 +67,9 @@ public class Marble {
         if (canMove(newI, this.pos.getJ(), board)) {
             setPos(newI, this.pos.getJ()); // using setPos to update position
             Position now = getPos();
+            if (!pathDid.contains(now)) { // Add the new position to pathDid
+                pathDid.add(now);
+            }
             return updateBoard(board, prev, now);
         }
         return board;
@@ -78,6 +81,9 @@ public class Marble {
         if (canMove(newI, this.pos.getJ(), board)) {
             setPos(newI, this.pos.getJ());
             Position now = getPos();
+            if (!pathDid.contains(now)) { // Add the new position to pathDid
+                pathDid.add(now);
+            }
             return updateBoard(board, prev, now);
         }
         return board;
@@ -89,6 +95,9 @@ public class Marble {
         if (canMove(this.pos.getI(), newJ, board)) {
             setPos(this.pos.getI(), newJ);
             Position now = getPos();
+            if (!pathDid.contains(now)) { // Add the new position to pathDid
+                pathDid.add(now);
+            }
             return updateBoard(board, prev, now);
         }
         return board;
@@ -100,6 +109,9 @@ public class Marble {
         if (canMove(this.pos.getI(), newJ, board)) {
             setPos(this.pos.getI(), newJ);
             Position now = getPos();
+            if (!pathDid.contains(now)) { // Add the new position to pathDid
+                pathDid.add(now);
+            }
             return updateBoard(board, prev, now);
         }
         return board;
