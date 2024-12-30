@@ -10,15 +10,17 @@ public class Ex1 {
     static int costOfPath;  // Cost:
     static double timeTook;
 
-    public static void main(String[] args) throws IOException {
+    public static void main() throws IOException {
 
+//        parsedData data = InputParser.parseInput("C:/Users" +
+//                "/rache/IdeaProjects/search_engine_marbles/input_output/3/input.txt");
         parsedData data = InputParser.parseInput("C:/Users" +
-                "/rache/IdeaProjects/search_engine_marbles/input_output/noam/input.txt");
-//        parsedData data = InputParser.parseInput("noa.txt");
+                "/rache/IdeaProjects/search_engine_marbles/input_output/noa/example3.txt");
 
-        String filePath = "noam-BFS - output.txt";
+        String filePath = "noa - output.txt";
         BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
 
+        assert data != null;
         String algoName = data.getAlgoName();
         boolean time = data.getTime();
         boolean openList = data.getOpenList();
@@ -38,31 +40,27 @@ public class Ex1 {
         System.out.println("Goal Board:");
         InputParser.printBoard(goalBoard);
 
+        reset();
         long startTime = System.nanoTime(); // start measuring the time
         switch (algoName) {
             case "BFS": {
-                reset();
                 runBFS(start, goal, writer);
                 break;
             }
             case "DFID": {
-                reset();
                 runDFID(start, goal, writer);
                 break;
             }
-            case "Astar": {
-                reset();
+            case "A*": {
                 runAstar(start, goal, writer);
                 break;
             }
-            case "IDAstar": {
-                reset();
+            case "IDA*": {
                 runIDAstar(start, goal, writer);
                 break;
             }
             case "DFBnB": {
-                reset();
-                runDFBnB(startBoard, goalBoard);
+                runDFBnB(start, goal, writer);
                 break;
             }
         }
@@ -84,27 +82,27 @@ public class Ex1 {
     private static void runBFS(Board startBoard, Board goalBoard, BufferedWriter writer) throws IOException {
         boolean goal;
         ArrayList<Board> openList = new ArrayList<>();  // frontier
-        Hashtable<Board, Integer> closedList = new Hashtable<>(); // closedList list 0 for not visited 1 for visited
+        HashSet<Board> closedList = new HashSet<>(); // closedList list 0 for not visited 1 for visited
 
         openList.add(startBoard);
         while (!openList.isEmpty()) {
             Board currentBoard = openList.removeFirst(); //take the first added board
             System.out.println("the current operator board is: ");
             InputParser.printBoard(currentBoard.getMarbleBoard());
-            if (closedList.containsKey(currentBoard)) {
+            if (closedList.contains(currentBoard)) {
                 continue; // Skip processing if already in closed list.
             }
             ArrayList<Operator> allOperators = generateAllOperators(currentBoard); //find all the possible operators for this state
-            closedList.put(currentBoard, 1); // adding to the closed list after finding all its "children"
+            closedList.add(currentBoard); // adding to the closed list after finding all its "children"
             for (Operator op : allOperators) {
                 Board curr = boardFromOperator(currentBoard, op); // the state we get when applying the given operator on the current state
-                numOfNodes ++; // will count each time a new state (board - node) was created
-                if(!closedList.containsKey(curr) && !openList.contains(curr)) {
+                numOfNodes++; // will count each time a new state (board - node) was created
+                if (!closedList.contains(curr) && !openList.contains(curr)) {
                     goal = curr.checkIsGoal(goalBoard.getMarbleBoard());
                     if (goal) {
                         System.out.println("reached the GOAL board: ");
                         InputParser.printBoard(curr.getMarbleBoard());
-                        ArrayList<Operator> path = retrievePath(curr, startBoard); // function to retrieve the path
+                        ArrayList<Operator> path = retrievePath(curr); // function to retrieve the path
                         String pathToString = pathToString(path);//  a to-string to the path
                         writer.write(pathToString); // write path to output.txt
                         System.out.println(pathToString);
@@ -133,10 +131,9 @@ public class Ex1 {
         ArrayList<Operator> result;
         for (int depth = 1; depth <= 100; depth++) { // decide what the limit and not 100
             Hashtable<Board, Integer> h = new Hashtable<>();
-            result = runLimitedDFS(startBoard, startBoard, goalBoard, depth, h);
+            result = runLimitedDFS(startBoard, goalBoard, depth, h);
             if (result != null) {
                 // Use the path returned by runLimitedDFS instead of the global path
-                System.out.println("the level got to: " + depth);
                 String pathToString = pathToString(result);
                 writer.write(pathToString);
                 System.out.println(pathToString);
@@ -151,15 +148,13 @@ public class Ex1 {
         }
     }
 
-    private static ArrayList<Operator> runLimitedDFS(Board startBoard, Board currBoard, Board goalBoard, int limit, Hashtable<Board, Integer> h) {
+    private static ArrayList<Operator> runLimitedDFS(Board currBoard, Board goalBoard, int limit, Hashtable<Board, Integer> h) {
         if (currBoard.checkIsGoal(goalBoard.getMarbleBoard())) {
             // Directly return the path when goal is found
-            return retrievePath(currBoard, startBoard);
-        }
-        else if (limit == 0) { // if depth limit is reached and no solution found
+            return retrievePath(currBoard);
+        } else if (limit == 0) { // if depth limit is reached and no solution found
             return null;
-        }
-        else {
+        } else {
             h.put(currBoard, 1);
             ArrayList<Operator> result = null;
             boolean isCutoff = false;
@@ -170,7 +165,7 @@ public class Ex1 {
                 if (h.get(nextBoard) != null && h.get(nextBoard).equals(1)) {
                     continue;  // continue to the next operator - loop avoidance??????
                 }
-                result = runLimitedDFS(startBoard, nextBoard, goalBoard, limit - 1, h);
+                result = runLimitedDFS(nextBoard, goalBoard, limit - 1, h);
 
                 if (result != null) {
                     return result;
@@ -180,7 +175,7 @@ public class Ex1 {
             }
 
             h.remove(currBoard);  // checked all the children - can be released
-            if(isCutoff){  // ==true - current depth has been reached and no solution was found at this depth
+            if (isCutoff) {  // ==true - current depth has been reached and no solution was found at this depth
                 return null;
             }
             return result;
@@ -239,7 +234,7 @@ public class Ex1 {
      */
     private static void runAstar(Board startBoard, Board goalBoard, BufferedWriter writer) throws IOException {
         int iteration = 0;
-        PriorityQueue<Board> openList = new PriorityQueue<>(new BoardComparator()); // use the comparator based on the f of the board
+        PriorityQueue<Board> openList = new PriorityQueue<>(); // use the comparator based on the f of the board
         Hashtable<Board, Integer> closedList = new Hashtable<>();
         Hashtable<Board, Integer> processSet = new Hashtable<>(); // tracks boards in openList with their g(n)
 
@@ -256,7 +251,7 @@ public class Ex1 {
             Board current = openList.poll();
             processSet.remove(current);
             if (current.checkIsGoal(goalBoard.getMarbleBoard())) {  // Goal reached, output the path
-                ArrayList<Operator> path = retrievePath(current, startBoard);
+                ArrayList<Operator> path = retrievePath(current);
                 String thePath = pathToString(path);
                 writer.write(thePath);
                 System.out.println(thePath);
@@ -298,6 +293,7 @@ public class Ex1 {
         System.out.println("No solution found - A* failed");
     }
 
+
     /**
      * IDA* algo with a stack, without a closed-list, with loop-avoidance
      */
@@ -314,7 +310,7 @@ public class Ex1 {
             int result = runDFS(stack, threshold, goalBoard);
             if (result == -1) { // goal found
                 Board goalNode = stack.peek();
-                ArrayList<Operator> path = retrievePath(goalNode, startBoard);
+                ArrayList<Operator> path = retrievePath(goalNode);
                 String thePath = pathToString(path);
                 writer.write(thePath);
                 System.out.println(thePath);
@@ -346,7 +342,7 @@ public class Ex1 {
         for (Operator op : operators) {
             Board nextBoard = boardFromOperator(current, op);
             numOfNodes++;
-            if (isInStack(stack, nextBoard)){ // Loop avoidance: check if the board is already in the stack
+            if (isInStack(stack, nextBoard)) { // Loop avoidance: check if the board is already in the stack
                 continue;
             }
 
@@ -359,7 +355,7 @@ public class Ex1 {
             stack.push(nextBoard);
 
             int result = runDFS(stack, threshold, goalBoard);
-            if (result == -1){
+            if (result == -1) {
                 return -1; // solution found
             }
             minThreshold = Math.min(minThreshold, result);
@@ -371,11 +367,196 @@ public class Ex1 {
     }
 
 
-    private static void runDFBnB(Marble[][] startBoard, Marble[][] goalBoard) {
+    private static void runDFBnB(Board startBoard, Board goalBoard, BufferedWriter writer) throws IOException {
+        Stack<Board> stack = new Stack<>();
+        Hashtable<Marble[][], Board> hashTable = new Hashtable<>();
+        ArrayList<Operator> result = new ArrayList<>();
+        int t = Integer.MAX_VALUE; // initial threshold
 
-        // add code!!!! and understand what are the parameters needed for it
+        startBoard.setG(0);
+        startBoard.setH(heuristic(startBoard, goalBoard));
+        startBoard.setF(startBoard.getG() + startBoard.getH());
 
+        stack.push(startBoard);
+        hashTable.put(startBoard.getMarbleBoard(), startBoard);
+
+        while (!stack.isEmpty()) {
+            Board current = stack.pop();
+            if (current.isOut()) { // if the board is marked as "out," remove it from the hash table
+                hashTable.remove(current.getMarbleBoard());
+                continue;
+            }
+            current.setOut(true); // mark the current node as "out"
+            stack.push(current); // insert again to process needToCheck
+
+            ArrayList<Operator> operators = generateAllOperators(current);
+            ArrayList<Board> needToCheck = new ArrayList<>();
+
+            for (Operator op : operators) { // creates the list of the needToCheck boards
+                Board successor = boardFromOperator(current, op);
+                numOfNodes++;
+                // loop avoidance: skip if the successor is already in the stack
+                if (isInStack(stack, successor)){
+                    continue;
+                }
+                // update successor's g, h, and f values
+                successor.setG(current.getG() + op.getMarble().getCost());
+                successor.setH(heuristic(successor, goalBoard));
+                successor.setF(successor.getG() + successor.getH());
+
+                // prune needToCheck with f >= t
+                if (successor.getF() >= t) {
+                    continue;
+                }
+
+                // deal with needToCheck that are already in the hash table
+                if (hashTable.containsKey(successor.getMarbleBoard())) {
+                    Board existing = hashTable.get(successor.getMarbleBoard());
+                    if (existing.isOut() || existing.getF() <= successor.getF()) {
+                        continue; // skip if the existing board is better or already processed
+                    } else {
+                        stack.remove(existing);
+                        hashTable.remove(existing.getMarbleBoard());
+                    }
+                }
+
+                // check if the board is actually the goal
+                if (successor.checkIsGoal(goalBoard.getMarbleBoard())) {
+                    t = successor.getF(); // update threshold
+                    result = retrievePath(successor);
+                    break; // stop processing needToCheck
+                }
+                needToCheck.add(successor);  // add valid successor to the list
+            }
+            Collections.sort(needToCheck); // sort needToCheck by f value
+            // insert needToCheck into the stack and hash table in reverse order
+            for (int i = needToCheck.size() - 1; i >= 0; i--) {
+                Board board = needToCheck.get(i);
+                stack.push(board);
+                hashTable.put(board.getMarbleBoard(), board);
+            }
+        }
+        // Output the result
+        if (!result.isEmpty()) {
+            String pathToString = pathToString(result);
+            writer.write(pathToString);
+            System.out.println(pathToString);
+            writer.newLine();
+            writer.write("Num: " + numOfNodes);
+            System.out.println("Num: " + numOfNodes);
+            writer.newLine();
+            writer.write("Cost: " + costOfPath);
+            System.out.println("Cost: " + costOfPath);
+        } else {
+            writer.write("no path");
+            writer.newLine();
+            writer.write("Num: " + numOfNodes);
+            writer.newLine();
+            writer.write("Cost: inf");
+        }
+        writer.flush();
     }
+
+//    private static void runDFBnB(Board startBoard, Board goalBoard, BufferedWriter writer) throws IOException {
+//        Stack<Board> stack = new Stack<>();
+//        Hashtable<Marble[][], Board> hashTable = new Hashtable<>();
+//        ArrayList<Operator> result = new ArrayList<>();
+//        int t = Integer.MAX_VALUE; // initial threshold
+//
+//        startBoard.setG(0);
+//        startBoard.setH(heuristic(startBoard, goalBoard));
+//        startBoard.setF(startBoard.getG() + startBoard.getH());
+//
+//        stack.push(startBoard);
+//        hashTable.put(startBoard.getMarbleBoard(), startBoard);
+//
+//        while (!stack.isEmpty()) {
+//            Board current = stack.pop();
+//            if (current.isOut()) { // if the board is marked as "out," remove it from the hash table
+//                hashTable.remove(current.getMarbleBoard());
+//            } else {
+//                current.setOut(true); // mark the current node as "out"
+//                stack.push(current); // reinsert to allow processing its successors
+//
+//                ArrayList<Operator> operators = generateAllOperators(current);
+//                ArrayList<Board> successors = new ArrayList<>();
+//
+//                for (Operator op : operators) {
+//                    Board successor = boardFromOperator(current, op);
+//
+//                    // Avoid reprocessing already processed nodes
+//                    if (hashTable.containsKey(successor.getMarbleBoard()) && hashTable.get(successor.getMarbleBoard()).isOut()) {
+//                        continue;
+//                    }
+//
+//                    // Update or add the node based on cost
+//                    if (!hashTable.containsKey(successor.getMarbleBoard()) ||
+//                            successor.getF() < hashTable.get(successor.getMarbleBoard()).getF()) {
+//
+//                        successor.setG(current.getG() + successor.getHowGotTo().getMarble().getCost());
+//                        successor.setH(heuristic(successor, goalBoard));
+//                        successor.setF(successor.getG() + successor.getH());
+//                        successors.add(successor);
+//                        numOfNodes++;
+//                    }
+//                }
+//
+//                Collections.sort(successors);
+//
+//                ArrayList<Board> temp = new ArrayList<>();
+//                for (Board successor : successors) {
+//                    if (successor.getF() >= t) {
+//                        break;
+//                    }
+//
+//                    if (successor.checkIsGoal(goalBoard.getMarbleBoard())) {
+//                        t = successor.getF();
+//                        result = retrievePath(successor);
+//                        break;
+//                    }
+//
+//                    // Handle nodes already in the hash table
+//                    if (hashTable.containsKey(successor.getMarbleBoard())) {
+//                        Board existingNode = hashTable.get(successor.getMarbleBoard());
+//                        if (!existingNode.isOut() && existingNode.getF() > successor.getF()) {
+//                            stack.remove(existingNode);
+//                            hashTable.remove(successor.getMarbleBoard());
+//                            temp.add(successor);
+//                        }
+//                    } else {
+//                        temp.add(successor);
+//                    }
+//                }
+//
+//                // Insert successors into the stack and hash table in reverse order
+//                for (int i = temp.size() - 1; i >= 0; i--) {
+//                    Board board = temp.get(i);
+//                    stack.push(board);
+//                    hashTable.put(board.getMarbleBoard(), board);
+//                }
+//            }
+//        }
+//
+//        // Output the result
+//        if (!result.isEmpty()) {
+//            String pathToString = pathToString(result);
+//            writer.write(pathToString);
+//            System.out.println(pathToString);
+//            writer.newLine();
+//            writer.write("Num: " + numOfNodes);
+//            System.out.println("Num: " + numOfNodes);
+//            writer.newLine();
+//            writer.write("Cost: " + costOfPath);
+//            System.out.println("Cost: " + costOfPath);
+//        } else {
+//            writer.write("no path");
+//            writer.newLine();
+//            writer.write("Num: " + numOfNodes);
+//            writer.newLine();
+//            writer.write("Cost: inf");
+//        }
+//        writer.flush();
+//    }
 
 
     /**
@@ -385,45 +566,48 @@ public class Ex1 {
      */
     private static ArrayList<Operator> generateAllOperators(Board currentBoard) {
         ArrayList<Operator> allOperators = new ArrayList<>();
-        for (int i=0;i<3;i++) {
-            for (int j=0;j<3;j++) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 Marble m = new Marble(currentBoard.getMarbleBoard()[i][j]);
 
-                if(m.getColor().equals("R") || m.getColor().equals("B") || m.getColor().equals("G")) {
+                if (m.getColor().equals("R") || m.getColor().equals("B") || m.getColor().equals("G")) {
                     boolean[] possible = m.allowedOperators(currentBoard.getMarbleBoard());
                     Position prev = new Position(i, j);
                     if (possible[0]) { // up
                         Position curr = new Position((i - 1 + 3) % 3, j);
-                        if (m.getPathDid().equals(curr)) continue; // Skip moves leading back to the previous position
-                        Operator op = new Operator(m, "up", prev, curr);
-                        allOperators.add(op);
+                        if (!m.getPathDid().contains(curr)){
+                            Operator op = new Operator(m, "up", prev, curr);
+                            allOperators.add(op);
+                        }
                     }
                     if (possible[1]) { // down
                         Position curr = new Position((i + 1) % 3, j);
-                        if (m.getPathDid().equals(curr)) continue;
-                        Operator op = new Operator(m, "down", prev, curr);
-                        allOperators.add(op);
+                        if (!m.getPathDid().contains(curr)) {
+                            Operator op = new Operator(m, "down", prev, curr);
+                            allOperators.add(op);
+                        }
                     }
                     if (possible[2]) { // left
                         Position curr = new Position(i, (j - 1 + 3) % 3);
-                        if (m.getPathDid().equals(curr)) continue;
-                        Operator op = new Operator(m, "left", prev, curr);
-                        allOperators.add(op);
+                        if (!m.getPathDid().contains(curr)) {
+                            Operator op = new Operator(m, "left", prev, curr);
+                            allOperators.add(op);
+                        }
                     }
                     if (possible[3]) { // right
                         Position curr = new Position(i, (j + 1) % 3);
-                        if (m.getPathDid().equals(curr)) continue;
-                        Operator op = new Operator(m, "right", prev, curr);
-                        allOperators.add(op);
+                        if(!m.getPathDid().contains(curr)) {
+                            Operator op = new Operator(m, "right", prev, curr);
+                            allOperators.add(op);
+                        }
                     }
-
                 }
             }
         }
         return allOperators;
     }
 
-    public static void reset(){
+    public static void reset() {
         path = new ArrayList<>();
         numOfNodes = 0;  // Num:
         costOfPath = 0;  // Cost:
@@ -441,16 +625,29 @@ public class Ex1 {
             }
         }
         // then apply the move
-        if(op.move.equals("up")){ map = op.marble.moveUp(map); }
-        if(op.move.equals("down")){ map = op.marble.moveDown(map); }
-        if(op.move.equals("left")){ map = op.marble.moveLeft(map); }
-        if(op.move.equals("right")){ map = op.marble.moveRight(map); }
+        if (op.move.equals("up")) {
+            map = op.marble.moveUp(map);
+        }
+        if (op.move.equals("down")) {
+            map = op.marble.moveDown(map);
+        }
+        if (op.move.equals("left")) {
+            map = op.marble.moveLeft(map);
+        }
+        if (op.move.equals("right")) {
+            map = op.marble.moveRight(map);
+        }
 
-        return new Board(map, false, prevBoard, op);
+        // Create the new board with correct parent and operator
+        Board newBoard = new Board(map, false);
+        newBoard.setParent(prevBoard);
+        newBoard.setHowGotTo(op);
+
+        return newBoard;
     }
 
     // function to retrieve the path
-    public static ArrayList<Operator> retrievePath(Board lastOne, Board startBoard) {
+    public static ArrayList<Operator> retrievePath(Board lastOne) {
         ArrayList<Operator> path = new ArrayList<>();
         Board current = lastOne;  // maybe need to copy
 
@@ -463,17 +660,17 @@ public class Ex1 {
 
 
     // converts the path to the form: (2,2):B:(2,3)--(2,3):B:(1,3)--(3,1):G:(3,3)--(3,2):G:(2,2)
-    public static String pathToString(ArrayList<Operator> path){
-        if(path.isEmpty()){
+    public static String pathToString(ArrayList<Operator> path) {
+        if (path.isEmpty()) {
             costOfPath = -1;
             return "no path";
         }
         StringBuilder thePath = new StringBuilder((path.getFirst().getPrevPos().toString() + ":"
-                                                    + path.getFirst().getMarble().getColor() + ":"
-                                                    + path.getFirst().getNextPos().toString()));
+                + path.getFirst().getMarble().getColor() + ":"
+                + path.getFirst().getNextPos().toString()));
         costOfPath += path.getFirst().getMarble().getCost(); // will add the cost of the marble that we moved
         String xTOy = "";
-        for (int i=1;i<path.size();i++) {
+        for (int i = 1; i < path.size(); i++) {
             thePath.append("--");
             xTOy = (path.get(i).getPrevPos() + ":" + path.get(i).getMarble().getColor() + ":" + path.get(i).getNextPos());
             costOfPath += path.get(i).getMarble().getCost(); // will add the cost of the marble that we moved
@@ -484,39 +681,18 @@ public class Ex1 {
 
     private static boolean isInStack(Stack<Board> stack, Board board) {
         for (Board b : stack) {
-            if (b.equals(board)) return true;
+            if (b.checkEquals(board.getMarbleBoard())) return true;
         }
         return false;
     }
 
 
     private static void printOpenList(PriorityQueue<Board> openList) {
-        for(int i=0; i<openList.size(); i++){
+        for (int i = 0; i < openList.size(); i++) {
             Marble[][] map = openList.poll().getMarbleBoard();
             InputParser.printBoard(map);
             System.out.println("------------");
         }
-    }
-}
-
-
-class BoardComparator implements Comparator<Board> {
-    @Override
-    public int compare(Board b1, Board b2) {
-        // First compare by f-value
-        int fComparison = Integer.compare(b1.getF(), b2.getF());
-        if (fComparison != 0) {
-            return fComparison;
-        }
-
-//        // If f-values are equal, prefer states with lower h-values
-//        int hComparison = Integer.compare(b1.getH(), b2.getH());
-//        if (hComparison != 0) {
-//            return hComparison;
-//        }
-
-        // If both f and h are equal, use creation time as tiebreaker
-        return Integer.compare(b1.getCreationTime(), b2.getCreationTime());
     }
 }
 

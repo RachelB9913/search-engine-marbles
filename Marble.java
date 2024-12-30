@@ -6,7 +6,7 @@ public class Marble {
     private final int cost;
     private Position pos; //maybe to change just to i and j
     private boolean[] allowedOperators;
-    private ArrayList<Position> pathDid;  //maybe to save only last move - not to repeat
+    private ArrayList<Position> pathDid;
 
 
     public Marble(String color, Position pos) {
@@ -119,12 +119,13 @@ public class Marble {
     }
 
     // checks that the wanted space is blank (no color or X) and that doesn't go right back to where it was
+    // also checks if a move is valid and doesn't create a loop
     private boolean canMove(int i, int j, Marble[][] board) {
-        if((this.getColor().equals("R") || this.getColor().equals("G") || this.getColor().equals("B"))
-                && board[i][j].getColor().equals("_")
-                && (this.pathDid.getLast().getI() != i || this.pathDid.getLast().getJ() != j)){
-            return true;}
-        else { return false; }
+        if (!board[i][j].getColor().equals("_")){
+            return false;
+        }
+        Position newPos = new Position(i, j);
+        return !pathDid.contains(newPos); // ensure no loops
     }
 
     // this function ensures that the allowed operators for the marble will maintain that the marble
@@ -133,26 +134,33 @@ public class Marble {
         boolean[] allowed = new boolean[4]; // [up, down, left, right]
         int i = this.pos.getI();
         int j = this.pos.getJ();
+
+        // Only allow moves if the marble is a valid color
         if (!board[i][j].getColor().equals("G") && !board[i][j].getColor().equals("R") && !board[i][j].getColor().equals("B")) {
             return new boolean[]{false, false, false, false};
         }
+
         // Check up
         int upI = (i - 1 + 3) % 3;
-        allowed[0] = board[upI][j].getColor().equals("_") && !(this.pathDid.getLast().getI() == upI && this.pathDid.getLast().getJ() == j);
+        Position upPos = new Position(upI, j);
+        allowed[0] = board[upI][j].getColor().equals("_") && !pathDid.contains(upPos);
 
         // Check down
         int downI = (i + 1) % 3;
-        allowed[1] = board[downI][j].getColor().equals("_") && !(this.pathDid.getLast().getI() == downI && this.pathDid.getLast().getJ() == j);
+        Position downPos = new Position(downI, j);
+        allowed[1] = board[downI][j].getColor().equals("_") && !pathDid.contains(downPos);
 
         // Check left
         int leftJ = (j - 1 + 3) % 3;
-        allowed[2] = board[i][leftJ].getColor().equals("_") && !(this.pathDid.getLast().getI() == i && this.pathDid.getLast().getJ() == leftJ);
+        Position leftPos = new Position(i, leftJ);
+        allowed[2] = board[i][leftJ].getColor().equals("_") && !pathDid.contains(leftPos);
 
         // Check right
         int rightJ = (j + 1) % 3;
-        allowed[3] = board[i][rightJ].getColor().equals("_") && !(this.pathDid.getLast().getI() == i && this.pathDid.getLast().getJ() == rightJ);
+        Position rightPos = new Position(i, rightJ);
+        allowed[3] = board[i][rightJ].getColor().equals("_") && !pathDid.contains(rightPos);
 
-        return allowed;  // true = allowed, false = forbidden
+        return allowed;
     }
 }
 
@@ -192,6 +200,18 @@ class Position {
         return "("+ realI+","+ realJ+")";
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true; // Same reference
+        if (obj == null || getClass() != obj.getClass()) return false; // Null or different class
+        Position other = (Position) obj;
+        return this.i == other.getI() && this.j == other.getJ(); // Compare coordinates
+    }
+
+    @Override //with the help of chatGPT
+    public int hashCode() {
+        return 31 * i + j; // Generate a simple hash code for consistency
+    }
 }
 
 

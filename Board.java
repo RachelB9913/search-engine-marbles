@@ -1,6 +1,4 @@
-import java.util.Comparator;
-
-public class Board {
+public class Board implements Comparable<Board> {
     private Marble[][] board;
     private final boolean isGoal;
     private Board parent;
@@ -11,6 +9,8 @@ public class Board {
     private  int h;
     private int f;
     private int creationTime;
+
+    private boolean isOut = false;
 
     public Board(Marble[][] board, boolean isGoal) { //decide what to erase
         if (board == null) {
@@ -142,5 +142,18 @@ public class Board {
 
     public void setCreationTime(int time) {this.creationTime = time;}
 
+    public boolean isOut() { return isOut; }
+
+    public void setOut(boolean out) { this.isOut = out; }
+
+    @Override
+    public int compareTo(Board other) {
+        int ans = Integer.compare(this.getF(), other.getF());
+        // if the f values are the same so compare by the time that was created
+        if(ans == 0){
+            ans = Integer.compare(this.creationTime, other.creationTime);
+        }
+        return ans;
+    }
 }
 

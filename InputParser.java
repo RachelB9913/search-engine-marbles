@@ -136,11 +136,4 @@ class parsedData {
         return goalBoard;
     }
 
-    public  Marble getMarble(Marble[][] board, int i, int j) {
-        if (i < 0 || i >= board.length || j < 0 || j >= board[0].length) {
-            throw new IndexOutOfBoundsException("Position out of board bounds.");
-        }
-        return board[i][j];
-    }
-
 }
