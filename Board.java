@@ -34,21 +34,6 @@ public class Board implements Comparable<Board> {
         this.howGotTo = null;
     }
 
-    public Board(Marble[][] board, boolean isGoal, int creationTime) {
-        this.board = board;
-        this.isGoal = isGoal;
-        this.g = 0;
-        this.h = 0;
-        this.f = 0;
-        this.creationTime = creationTime;
-    }
-
-    public Board(Marble[][] board, boolean isGoal, Board parent, Operator howGotTo) {
-        this.board = board;
-        this.isGoal = isGoal;
-        this.parent = parent;
-        this.howGotTo = howGotTo;
-    }
 
     // uses deep copy to return the marble board
     public Marble[][] getMarbleBoard() {
@@ -138,7 +123,6 @@ public class Board implements Comparable<Board> {
 
     public void setF(int f) { this.f = f; }
 
-    public int getCreationTime() {return creationTime;}
 
     public void setCreationTime(int time) {this.creationTime = time;}
 
@@ -156,4 +140,3 @@ public class Board implements Comparable<Board> {
         return ans;
     }
 }
-

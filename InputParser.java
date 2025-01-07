@@ -108,16 +108,6 @@ class parsedData {
         return openList;
     }
 
-    public Marble[][] getStartMarbleBoard() {
-        Marble[][] startBoard = new Marble[3][3];
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                startBoard[i][j] = this.startBoard.getMarbleBoard()[i][j];
-            }
-        }
-        return startBoard;
-    }
-
     public Board getStartBoard() {
         return startBoard;
     }
@@ -134,6 +124,13 @@ class parsedData {
 
     public Board getGoalBoard() {
         return goalBoard;
+    }
+
+    public  Marble getMarble(Marble[][] board, int i, int j) {
+        if (i < 0 || i >= board.length || j < 0 || j >= board[0].length) {
+            throw new IndexOutOfBoundsException("Position out of board bounds.");
+        }
+        return board[i][j];
     }
 
 }
