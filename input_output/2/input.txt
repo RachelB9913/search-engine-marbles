@@ -1,0 +1,10 @@
+DFBnB
+with time
+no open
+G,B,R
+_,G,_
+R,B,X
+Goal state:
+_,R,R
+B,B,_
+G,G,X
