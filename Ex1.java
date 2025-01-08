@@ -9,7 +9,7 @@ public class Ex1 {
     private static int costOfPath;  // Cost:
     private static double timeTook;
 
-    public static void main() throws IOException {
+    public static void main(String[] args) throws IOException {
 
         parsedData data = InputParser.parseInput("input.txt");
 
@@ -360,7 +360,7 @@ public class Ex1 {
         HashSet<Board> hash = new HashSet<>();
         ArrayList<Operator> result = new ArrayList<>();
 //        int t = Integer.MAX_VALUE; // initial threshold
-        int t = 2 * heuristic(startBoard, goalBoard); // initial threshold
+        int t = 100 * heuristic(startBoard, goalBoard); // initial threshold - does it in half the time of Integer.MAX_VALUE but still run through all the options
 
         startBoard.setG(0);
         startBoard.setH(heuristic(startBoard, goalBoard));
@@ -613,3 +613,4 @@ public class Ex1 {
         return false;
     }
 }
+
