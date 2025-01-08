@@ -12,7 +12,6 @@ class InputParser {
         Board goal = null;
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            System.out.println("Reading file " + fileName);
             algoName = br.readLine();  // Read algo_name
 
             String timeLine = br.readLine();  // Read time
@@ -27,7 +26,6 @@ class InputParser {
                 for (int j = 0; j < 3; j++) {
                     startBoard[i][j] = new Marble(row[j], new Position(i, j));
                 }
-                start = new Board(startBoard, false, null);
             }
 
             br.readLine();  // Skip "Goal state:" line
@@ -38,7 +36,6 @@ class InputParser {
                 for (int j = 0; j < 3; j++) {
                     goalBoard[i][j] = new Marble(row[j], new Position(i, j));
                 }
-                goal = new Board(goalBoard, false);
             }
 
             // Ensure boards are always initialized
@@ -112,25 +109,7 @@ class parsedData {
         return startBoard;
     }
 
-    public Marble[][] getGoalMarbleBoard() {
-        Marble[][] goalBoard = new Marble[3][3];
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                goalBoard[i][j] = this.goalBoard.getMarbleBoard()[i][j];
-            }
-        }
-        return goalBoard;
-    }
-
     public Board getGoalBoard() {
         return goalBoard;
     }
-
-    public  Marble getMarble(Marble[][] board, int i, int j) {
-        if (i < 0 || i >= board.length || j < 0 || j >= board[0].length) {
-            throw new IndexOutOfBoundsException("Position out of board bounds.");
-        }
-        return board[i][j];
-    }
-
 }

@@ -1,4 +1,6 @@
 public class Operator {
+    /** Operator is the class that represents a movement action for a marble.
+     * with the help of this class we can pass from one state (board) to another */
     Marble marble;
     Position prevPos;
     String move; // [up, down, left, right]

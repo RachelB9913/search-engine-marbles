@@ -1,4 +1,5 @@
 public class Board implements Comparable<Board> {
+    // the boards are the states
     private Marble[][] board;
     private final boolean isGoal;
     private Board parent;
@@ -26,14 +27,6 @@ public class Board implements Comparable<Board> {
         }
         this.isGoal = isGoal;
     }
-
-    public Board(Marble[][] board, boolean isGoal, Board parent) {
-        this.board = board;
-        this.isGoal = isGoal;
-        this.parent = parent;
-        this.howGotTo = null;
-    }
-
 
     // uses deep copy to return the marble board
     public Marble[][] getMarbleBoard() {
@@ -122,7 +115,6 @@ public class Board implements Comparable<Board> {
     public int getF() { return f; }
 
     public void setF(int f) { this.f = f; }
-
 
     public void setCreationTime(int time) {this.creationTime = time;}
 
