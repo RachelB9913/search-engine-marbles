@@ -7,8 +7,8 @@ public class Operator {
     Position nextPos;
 
 
-    public Operator(Marble marble, String move, Position prevPos, Position nextPos) {
-        this.marble = this.marble;
+    public Operator(Marble marble , String move,Position prevPos, Position nextPos) {
+        this.marble = marble;
         this.move = move;
         this.prevPos = prevPos;
         this.nextPos = nextPos;

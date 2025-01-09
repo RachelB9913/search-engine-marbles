@@ -4,8 +4,7 @@ public class Marble {
 
     private String color = "";
     private final int cost;
-    private Position pos; //maybe to change just to i and j
-    private boolean[] allowedOperators;
+    private Position pos;
     private ArrayList<Position> pathDid;
 
 
@@ -18,7 +17,6 @@ public class Marble {
             case "B": this.cost = 1; break;
             default: this.cost = 0;
         }
-        this.allowedOperators = new boolean[4];
         this.pathDid = new ArrayList<>();
         this.pathDid.add(pos);
     }
@@ -28,7 +26,6 @@ public class Marble {
         this.color = marble.getColor();
         this.cost = marble.getCost();
         this.pos = marble.getPos();
-        this.allowedOperators = new boolean[4];
         this.pathDid = new ArrayList<>(marble.getPathDid()); // deep copy
         this.pathDid.add(marble.getPos());
     }
@@ -124,13 +121,18 @@ public class Marble {
     }
 
     // checks that the wanted space is blank (no color or X) and that doesn't go right back to where it was
-    // also checks if a move is valid and doesn't create a loop
     private boolean canMove(int i, int j, Marble[][] board) {
         if (!board[i][j].getColor().equals("_")) {
             return false; // Can only move to empty spaces
         }
+
         Position newPos = new Position(i, j);
-        return isImmediateBacktrack(newPos); // Prevent immediate backtracking
+        // Check for immediate backtracking
+        if (!pathDid.isEmpty() && newPos.equals(pathDid.getLast())) {
+            return false; // Prevent it
+        }
+
+        return true;
     }
 
     public boolean[] allowedOperators(Marble[][] board) {
@@ -138,31 +140,31 @@ public class Marble {
         int i = this.pos.getI();
         int j = this.pos.getJ();
 
-        if (!board[i][j].getColor().matches("[RGB]")) {
-            return allowed; // Only valid colors can move
+        // Check up
+        int upI = (i - 1 + 3) % 3;
+        if (canMove(upI, j, board)) {
+            allowed[0] = true;
         }
 
-        int upI = (i - 1 + 3) % 3;
-        allowed[0] = board[upI][j].getColor().equals("_") && isImmediateBacktrack(new Position(upI, j));
-
+        // Check down
         int downI = (i + 1) % 3;
-        allowed[1] = board[downI][j].getColor().equals("_") && isImmediateBacktrack(new Position(downI, j));
+        if (canMove(downI, j, board)) {
+            allowed[1] = true;
+        }
 
+        // Check left
         int leftJ = (j - 1 + 3) % 3;
-        allowed[2] = board[i][leftJ].getColor().equals("_") && isImmediateBacktrack(new Position(i, leftJ));
+        if (canMove(i, leftJ, board)) {
+            allowed[2] = true;
+        }
 
+        // Check right
         int rightJ = (j + 1) % 3;
-        allowed[3] = board[i][rightJ].getColor().equals("_") && isImmediateBacktrack(new Position(i, rightJ));
+        if (canMove(i, rightJ, board)) {
+            allowed[3] = true;
+        }
 
         return allowed;
-    }
-
-    private boolean isImmediateBacktrack(Position newPos) {
-        if (pathDid.isEmpty()) {
-            return true; // No path history, cannot backtrack
-        }
-        Position lastPos = pathDid.getLast(); // Last position in the path
-        return !newPos.equals(lastPos); // Prevent moving back to the immediate last position
     }
 }
 

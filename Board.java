@@ -1,7 +1,6 @@
 public class Board implements Comparable<Board> {
     // the boards are the states
     private Marble[][] board;
-    private final boolean isGoal;
     private Board parent;
     private Operator howGotTo;
 
@@ -13,7 +12,7 @@ public class Board implements Comparable<Board> {
 
     private boolean isOut = false;
 
-    public Board(Marble[][] board, boolean isGoal) { //decide what to erase
+    public Board(Marble[][] board) { //decide what to erase
         if (board == null) {
             this.board = new Marble[3][3];
             // initialize with blank marbles or throw an exception
@@ -25,7 +24,6 @@ public class Board implements Comparable<Board> {
         } else {
             this.board = board;
         }
-        this.isGoal = isGoal;
     }
 
     // uses deep copy to return the marble board
